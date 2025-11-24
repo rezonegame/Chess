@@ -178,7 +178,7 @@ const LogicHeavy = {
                 const code = Engine.board[y][x];
                 if(code !== 0) {
                     const p = document.createElement('div');
-                    p.className = 'piece';
+                    p.className = 'piece show';
                     p.innerText = this.getIcon(code);
                     // 样式
                     p.style.fontSize = (size*0.8)+'px';
