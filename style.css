@@ -1,0 +1,258 @@
+/* --- 1. 视觉系统：亲和力暖色调 --- */
+:root {
+    --bg-page: #fbf7f2; /* 暖米白 */
+    --bg-panel: #ffffff;
+    --text-main: #433422; /* 深咖啡色 */
+    --text-light: #9e8f80;
+    --accent: #ff8e53; /* 活力橙 */
+    --accent-hover: #ff7b35;
+    --primary: #4facfe; /* 宁静蓝 */
+    --board-wood: #ebd3b1;
+    --board-border: #c4a484;
+    --shadow: 0 8px 24px rgba(149, 157, 165, 0.15);
+    --radius: 16px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+    font-family: 'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+/* --- 2. 布局结构 --- */
+#app { display: flex; width: 100%; height: 100%; }
+
+/* 左侧导航栏 */
+aside {
+    width: 280px;
+    background: var(--bg-panel);
+    border-right: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+    transition: transform 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+.brand {
+    padding: 25px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.game-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.category-title {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin: 15px 0 5px 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.game-btn {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    transition: all 0.2s;
+}
+.game-btn:hover { background-color: #fff5ee; }
+.game-btn.active { background-color: #fff0e6; color: var(--accent); box-shadow: 0 2px 6px rgba(255, 142, 83, 0.1); }
+.game-icon { margin-right: 12px; font-size: 1.2rem; width: 24px; text-align: center; }
+
+/* 主游戏区 */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-image: radial-gradient(#e4e4e4 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+header {
+    padding: 15px 30px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.menu-toggle { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main); border:none; background:none;}
+
+.status-pill {
+    background: #fff;
+    padding: 6px 20px;
+    border-radius: 50px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    font-weight: bold;
+    color: var(--primary);
+    display: flex; gap: 15px;
+}
+
+#game-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: auto;
+}
+
+/* --- 3. 通用棋盘样式 --- */
+.board-wrap {
+    position: relative;
+    padding: 15px;
+    border-radius: var(--radius);
+    background: #fff;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s;
+}
+
+.board { display: grid; gap: 1px; margin: 0 auto; }
+
+.cell {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* 棋子通用动画 */
+.piece {
+    width: 85%; height: 85%;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 2;
+    pointer-events: none;
+}
+.piece.show { transform: scale(1); }
+
+/* --- 4. 特定游戏皮肤 --- */
+/* 五子棋/围棋 */
+.skin-wood {
+    background: var(--board-wood);
+    border: 6px solid var(--board-border);
+}
+.skin-wood .cell::before { content:''; position:absolute; top:50%; left:0; width:100%; height:1px; background:#8b5a2b; }
+.skin-wood .cell::after { content:''; position:absolute; left:50%; top:0; height:100%; width:1px; background:#8b5a2b; }
+.piece.b { background: radial-gradient(circle at 30% 30%, #666, #111); box-shadow: 2px 2px 4px rgba(0,0,0,0.4); }
+.piece.w { background: radial-gradient(circle at 30% 30%, #fff, #e6e6e6); box-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+
+/* 井字棋/涂鸦 */
+.skin-paper {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+.skin-paper .cell { 
+    border: 2px solid #f0f0f0; 
+    font-family: 'Comic Sans MS', cursive; 
+    font-size: 3rem; 
+}
+.skin-paper .cell:first-child { border-top-left-radius: 15px; }
+
+/* 黑白棋 */
+.skin-green {
+    background: #27ae60;
+    border: 6px solid #1e8449;
+    gap: 2px;
+}
+.skin-green .cell { background: rgba(0,0,0,0.05); }
+.hint { width: 10px; height: 10px; background: rgba(0,0,0,0.2); border-radius: 50%; }
+
+/* 四子棋 */
+.skin-blue {
+    background: #4facfe;
+    border: 6px solid #00f2fe;
+    gap: 4px;
+    padding: 10px;
+}
+.skin-blue .cell { background: #3264a8; border-radius: 50%; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3); }
+
+/* 扫雷 */
+.skin-gray {
+    background: #bdbdbd;
+    border: 4px solid #7b7b7b;
+    padding: 5px;
+    gap: 2px;
+}
+.skin-gray .cell { 
+    background: #e0e0e0; 
+    border: 1px solid #fff; 
+    border-right-color: #7b7b7b; 
+    border-bottom-color: #7b7b7b;
+    font-weight: bold; font-family: monospace;
+}
+.skin-gray .cell.open { border: 1px solid #999; background: #d1d1d1; }
+
+/* 沙盒模式 */
+.skin-sandbox .cell { border: 1px dashed rgba(0,0,0,0.1); }
+.sandbox-piece { font-size: 2rem; cursor: grab; transition: none; transform: scale(1); }
+.sandbox-piece:active { cursor: grabbing; transform: scale(1.2); }
+
+/* --- 5. 底部控制栏 --- */
+.controls {
+    padding: 20px;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    border-top: 1px solid #eee;
+}
+.c-btn {
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: none;
+    background: #f4f6f8;
+    color: var(--text-main);
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.c-btn:hover { background: #e1e4e8; }
+.c-btn.primary { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(255, 142, 83, 0.3); }
+.c-btn.primary:hover { background: var(--accent-hover); }
+
+/* 响应式遮罩 */
+.overlay {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.4); z-index: 15; display: none;
+    backdrop-filter: blur(3px);
+}
+
+@media (max-width: 768px) {
+    aside { position: absolute; height: 100%; transform: translateX(-100%); }
+    aside.open { transform: translateX(0); }
+    .menu-toggle { display: block; }
+}
