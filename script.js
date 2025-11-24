@@ -701,24 +701,27 @@ const LogicLight = {
 
     aiMove() {
         if(Engine.isOver) return;
-        // 简单AI：寻找能赢的点 > 堵点 > 随机
         const valid = this.getValidMoves();
         if(valid.length===0) { 
              if(this.type==='reversi') { Engine.turn=1; UI.setStatus('AI跳过'); return; }
              UI.setStatus('平局'); Engine.isOver=true; return; 
         }
 
-        let best = valid[Math.floor(Math.random()*valid.length)];
-        
-        // 尝试赢/堵
-        for(let m of valid) {
-            // 虚拟下子逻辑简略...
-            // 此处为了代码长度限制，使用简化版AI：优先中路/角
-            if(this.type==='gomoku' || this.type==='tictactoe') {
-                 // 简易评分
+        const len = this.type==='tictactoe'?3:(this.type==='connect4'?4:5);
+
+        let best = null;
+        for(const m of valid) {
+            if(this.wouldWinAt(m.x, m.y, 2, len)) { best = m; break; }
+        }
+        if(!best) {
+            for(const m of valid) {
+                if(this.wouldWinAt(m.x, m.y, 1, len)) { best = m; break; }
             }
         }
-        
+        if(!best) {
+            best = valid.sort((a,b)=>this.centerScore(b)-this.centerScore(a))[0];
+        }
+
         this.exec(best.x, best.y, 2);
         if(this.checkWin(2)) return;
         Engine.turn = 1;
@@ -756,7 +759,6 @@ const LogicLight = {
     },
 
     checkWin(p) {
-        // Reversi 满盘判胜
         if(this.type==='reversi') {
             if(Engine.board.every(r=>r.every(c=>c!==0)) || this.getValidMoves().length===0) {
                  let b=0, w=0; Engine.board.flat().forEach(c=>{if(c===1)b++;if(c===2)w++});
@@ -764,12 +766,42 @@ const LogicLight = {
             }
             return false;
         }
-        // 连线检查
         const len = this.type==='tictactoe'?3:(this.type==='connect4'?4:5);
-        // ... (此处省略通用连线检查代码以节省空间，功能同前版)
-        // 简易判断：
-        // 实际代码中建议保留完整的 checkWin 逻辑
+        const h = Engine.board.length, w = Engine.board[0].length;
+        for(let y=0; y<h; y++) for(let x=0; x<w; x++) {
+            if(Engine.board[y][x]!==p) continue;
+            if(this.hasLineFrom(x,y,p,len)) { UI.setStatus(p===1?'你赢了':'AI赢了'); Engine.isOver=true; return true; }
+        }
+        if(Engine.board.every(r=>r.every(c=>c!==0))) { UI.setStatus('平局'); Engine.isOver=true; return true; }
         return false;
+    },
+
+    hasLineFrom(x,y,p,len) {
+        const dirs = [[1,0],[0,1],[1,1],[1,-1]];
+        for(const d of dirs) {
+            let cnt=0, nx=x, ny=y;
+            while(nx>=0 && ny>=0 && ny<Engine.board.length && nx<Engine.board[0].length && Engine.board[ny][nx]===p) {
+                cnt++; if(cnt>=len) return true; nx+=d[0]; ny+=d[1];
+            }
+        }
+        return false;
+    },
+
+    wouldWinAt(x,y,p,len) {
+        if(Engine.board[y][x]!==0) return false;
+        if(this.type==='connect4' && y<Engine.board.length-1 && Engine.board[y+1][x]===0) return false;
+        Engine.board[y][x]=p;
+        const win = this.hasLineFrom(x,y,p,len);
+        Engine.board[y][x]=0;
+        return win;
+    },
+
+    centerScore(m) {
+        const cx = (Engine.board[0].length-1)/2;
+        const cy = (Engine.board.length-1)/2;
+        const dx = Math.abs(m.x-cx);
+        const dy = Math.abs(m.y-cy);
+        return - (dx+dy);
     }
 };
 
